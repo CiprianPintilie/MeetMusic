@@ -1,0 +1,16 @@
+﻿<Properties StartupConfiguration="{A502D7BC-9707-4068-9A65-8265C8D4362E}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="MeetMusic/Startup.cs">
+    <Files>
+      <File FileName="MeetMusic/Program.cs" Line="1" Column="1" />
+      <File FileName="MeetMusic/Properties/launchSettings.json" Line="1" Column="1" />
+      <File FileName="MeetMusic/Startup.cs" Line="30" Column="57" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.MeetMusic PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>
