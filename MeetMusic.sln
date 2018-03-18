@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetMusicModels", "MeetMusicModels\MeetMusicModels.csproj", "{DB383E60-E54E-4A89-B0C9-59994EAA8F69}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "DataAccess\Data.csproj", "{17DBB411-2A25-4950-83DE-7823217D124E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{DB383E60-E54E-4A89-B0C9-59994EAA8F69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB383E60-E54E-4A89-B0C9-59994EAA8F69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB383E60-E54E-4A89-B0C9-59994EAA8F69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17DBB411-2A25-4950-83DE-7823217D124E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17DBB411-2A25-4950-83DE-7823217D124E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17DBB411-2A25-4950-83DE-7823217D124E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17DBB411-2A25-4950-83DE-7823217D124E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
