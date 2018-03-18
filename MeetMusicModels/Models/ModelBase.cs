@@ -13,6 +13,7 @@ namespace MeetMusicModels.Models
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [StringLength(36)]
         public string Id { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
