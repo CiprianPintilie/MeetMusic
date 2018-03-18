@@ -1,4 +1,5 @@
 ﻿using Data.Provider;
+using MeetMusicModels.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -13,11 +14,19 @@ namespace Data.Context
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder); var fact = new LoggerFactory();
             fact.AddProvider(new SqlLoggerProvider());
             optionsBuilder.UseLoggerFactory(fact);
         }
+
+        public DbSet<User> Users { get; set; }
+
     }
 }
