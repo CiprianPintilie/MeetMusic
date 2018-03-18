@@ -18,7 +18,7 @@ namespace API
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", reloadOnChange: true, optional: false)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", reloadOnChange: true, optional: true);
-            this.Configuration = builder.Build();
+            Configuration = builder.Build();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
