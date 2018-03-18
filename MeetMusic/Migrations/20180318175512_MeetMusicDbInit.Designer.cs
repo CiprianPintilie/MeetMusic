@@ -10,7 +10,7 @@ using System;
 namespace MeetMusic.Migrations
 {
     [DbContext(typeof(MeetMusicDbContext))]
-    [Migration("20180318173257_MeetMusicDbInit")]
+    [Migration("20180318175512_MeetMusicDbInit")]
     partial class MeetMusicDbInit
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,7 +35,8 @@ namespace MeetMusic.Migrations
                         .HasMaxLength(500);
 
                     b.Property<string>("Email")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasMaxLength(254);
 
                     b.Property<string>("FirstName")
                         .IsRequired();

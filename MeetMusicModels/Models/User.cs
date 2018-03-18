@@ -24,6 +24,7 @@ namespace MeetMusicModels.Models
         [Required(ErrorMessage = "Required")]
         [RegularExpression(@"^[a-zA-Z0-9.!#$%&’*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
         ErrorMessage = "Not a mail adress")]
+        [StringLength(254, ErrorMessage = "Email must not exceed {1} characters.")]
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Required")]

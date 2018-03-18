@@ -18,7 +18,7 @@ namespace MeetMusic.Migrations
                     Deleted = table.Column<bool>(nullable: false),
                     DeletedAt = table.Column<DateTime>(nullable: true),
                     Description = table.Column<string>(maxLength: 500, nullable: true),
-                    Email = table.Column<string>(nullable: false),
+                    Email = table.Column<string>(maxLength: 254, nullable: false),
                     FirstName = table.Column<string>(nullable: false),
                     Gender = table.Column<int>(nullable: false),
                     LastName = table.Column<string>(nullable: false),
