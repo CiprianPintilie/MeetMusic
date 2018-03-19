@@ -16,7 +16,23 @@ namespace Data.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>().HasIndex(x => x.Email).IsUnique();
+            modelBuilder.Entity<User>()
+                .HasIndex(x => x.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<MusicGenre>().HasOne(g => g.Family)
+                .WithMany(f => f.Genres)
+                .HasForeignKey(g => g.FamilyId);
+
+            modelBuilder.Entity<UserMusicFamily>()
+                .HasKey(uf => new {uf.UserId, uf.FamilyId});
+            modelBuilder.Entity<UserMusicFamily>().HasOne(uf => uf.User)
+                .WithMany(f => f.UserMusicFamilies)
+                .HasForeignKey(uf => uf.UserId);
+            modelBuilder.Entity<UserMusicFamily>()
+                .HasOne(uf => uf.MusicFamily)
+                .WithMany(f => f.UserMusicFamilies)
+                .HasForeignKey(uf => uf.FamilyId);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -27,6 +43,8 @@ namespace Data.Context
         }
 
         public DbSet<User> Users { get; set; }
-
+        public DbSet<MusicFamily> MusicFamilies { get; set; }
+        public DbSet<MusicGenre> MusicGenres { get; set; }
+        public DbSet<UserMusicFamily> UserMusicFamilies { get; set; }
     }
 }

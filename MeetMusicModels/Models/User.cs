@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace MeetMusicModels.Models
@@ -42,5 +43,7 @@ namespace MeetMusicModels.Models
 
         [StringLength(500, ErrorMessage = "Description is limited to {1} characters.")]
         public string Description { get; set; }
+
+        public ICollection<UserMusicFamily> UserMusicFamilies { get; set; }
     }
 }
