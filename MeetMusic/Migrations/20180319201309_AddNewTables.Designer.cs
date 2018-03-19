@@ -10,9 +10,10 @@ using System;
 namespace MeetMusic.Migrations
 {
     [DbContext(typeof(MeetMusicDbContext))]
-    partial class MeetMusicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180319201309_AddNewTables")]
+    partial class AddNewTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
