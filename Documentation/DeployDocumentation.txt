@@ -6,27 +6,44 @@ Install and configure nginx:
     - sudo apt-get install nginx
     - sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
     - sudo nano /etc/nginx/sites-available/default
-        server {
-            listen 80 default_server;
-            listen [::]:80 default_server;
-            server_name 54.38.33.198;
-            return 302 https://$server_name$request_uri;
+
+    server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        server_name 54.38.33.198;
+        #return 302 https://$server_name$request_uri;
+
+        location / {
+            proxy_pass http://127.0.0.1:5000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
         }
 
-        server {
-            # SSL configuration
-            listen 443 ssl http2 default_server;
-            listen [::]:443 ssl http2 default_server;
-            include snippets/self-signed.conf;
-            include snippets/ssl-params.conf;
-            location / {
-                proxy_pass http://127.0.0.1:5000;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto https;
-            }
+        location /api/ {
+            proxy_pass http://127.0.0.1:5001;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto https;
         }
+    }
+
+    #server {
+        # SSL configuration
+        #listen 443 ssl http2 default_server;
+        #listen [::]:443 ssl http2 default_server;
+        #include snippets/self-signed.conf;
+        #include snippets/ssl-params.conf;
+        #location / {
+            #proxy_pass http://127.0.0.1:5000;
+            #proxy_set_header Host $host;
+            #proxy_set_header X-Real-IP $remote_addr;
+            #proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            #proxy_set_header X-Forwarded-Proto https;
+        #}
+    #}
 
     - sudo ufw allow 'Nginx Full'
     - sudo ufw delete allow 'Nginx HTTP'
@@ -44,7 +61,7 @@ Install .Net core 2.1.4:
 
 ###################################################################
 
-Deploy API:
+Deploy MVC app:
 
     //Create repository
     - cd /sources
@@ -60,7 +77,23 @@ Deploy API:
 
 ###################################################################
 
-Create service:
+Deploy API:
+
+    //Create repository
+    - cd /sources
+    - sudo git clone https://github.com/CiprianPintilie/MeetMusic
+    //Update repository
+    - cd /sources/MeetMusic
+    - sudo git pull
+    //Publish
+    - cd /sources/MeetMusic/API
+    - sudo dotnet restore
+    - sudo dotnet publish -c release -o /var/www/MeetMusicApi -r linux-x64
+    - sudo systemctl restart nginx
+
+###################################################################
+
+Create MVC app service:
 
     sudo nano /etc/systemd/system/kestrel-MeetMusic.service
 
@@ -78,6 +111,27 @@ Create service:
 
     [Install]
     WantedBy=multi-user.target
+
+###################################################################
+
+Create API service:
+
+    sudo nano /etc/systemd/system/kestrel-MeetMusicApi.service
+
+[Unit]
+Description=MeetMusicApi
+
+[Service]
+WorkingDirectory=/var/www/MeetMusicApi
+ExecStart=/usr/bin/dotnet /var/www/MeetMusicApi/API.dll
+Restart=always
+RestartSec=10
+SyslogIdentifier=MeetMusic
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+
+[Install]
+WantedBy=multi-user.target
 
 ###################################################################
 
