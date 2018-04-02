@@ -1,9 +1,17 @@
-﻿using Data.Context;
+﻿using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using Data.Context;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 
 namespace API
 {
@@ -28,6 +36,72 @@ namespace API
                 options.UseMySQL(Configuration.GetConnectionString("DefaultConnection"));
             });
 
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                })
+                .AddCookie(options =>
+                {
+                    options.Cookie.Path = "/api";
+                    options.LoginPath = "/api/account";
+                    options.ExpireTimeSpan = TimeSpan.FromDays(20);
+                })
+                .AddOAuth("Spotify", options =>
+                {
+                    options.ClientId = Configuration["Spotify:ClientId"];
+                    options.ClientSecret = Configuration["Spotify:ClientSecret"];
+                    options.CallbackPath = new PathString("/spotify-login");
+
+                    // Configure the Auth0 endpoints                
+                    options.AuthorizationEndpoint = "https://accounts.spotify.com/authorize";
+                    options.TokenEndpoint = "https://accounts.spotify.com/api/token";
+                    options.UserInformationEndpoint = "https://api.spotify.com/v1/me";
+
+                    // To save the tokens to the Authentication Properties we need to set this to true
+                    // See code in OnTicketReceived event below to extract the tokens and save them as Claims
+                    options.SaveTokens = true;
+
+                    // Set scopes to see user's private informations and user's top artists
+                    options.Scope.Clear();
+                    options.Scope.Add("user-read-private");
+                    options.Scope.Add("user-read-email");
+                    options.Scope.Add("user-read-birthdate");
+                    options.Scope.Add("user-top-read");
+
+                    options.Events = new OAuthEvents
+                    {
+                        OnCreatingTicket = async context =>
+                        {
+                            // Retrieve user info
+                            var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
+                            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
+                            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                            var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
+                            response.EnsureSuccessStatusCode();
+
+                            // Extract the user info object
+                            var user = JObject.Parse(await response.Content.ReadAsStringAsync());
+
+                            // Add the name identifier claim
+                            var userId = user.Value<string>("id");
+                            if (!string.IsNullOrEmpty(userId))
+                            {
+                                context.Identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, userId, ClaimValueTypes.String, context.Options.ClaimsIssuer));
+                            }
+
+                            // Add the email
+                            var email = user.Value<string>("email");
+                            if (!string.IsNullOrEmpty(email))
+                            {
+                                context.Identity.AddClaim(new Claim(ClaimTypes.Email, email, ClaimValueTypes.String, context.Options.ClaimsIssuer));
+                            }
+                        }
+                    };
+                });
+
             services.AddMvc();
         }
 
@@ -38,6 +112,8 @@ namespace API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseAuthentication();
 
             app.UseMvc();
         }
