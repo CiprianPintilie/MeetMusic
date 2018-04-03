@@ -6,6 +6,11 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class HealthController : Controller
     {
+        /// <summary>
+        /// Shows if the api is started
+        /// </summary>
+        /// <returns></returns>
+        [ProducesResponseType(typeof(string), 200)]
         [HttpGet]
         [Route("")]
         public IActionResult Status()

@@ -1,4 +1,6 @@
-﻿using API.Interop;
+﻿using System;
+using System.IO;
+using API.Interop;
 using API.Services;
 using Data.Context;
 using MeetMusic.ExceptionMiddleware;
@@ -110,7 +112,18 @@ namespace API
             // Register the Swagger generator, defining one or more Swagger documents
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "MeetMusic API", Version = "v1" });
+                c.SwaggerDoc("v1", new Info
+                {
+                    Title = "MeetMusic API",
+                    Version = "v1",
+                    Description = "A simple music based social API",
+                    TermsOfService = "None"
+                });
+
+                // Set the comments path for the Swagger JSON and UI.
+                var basePath = AppContext.BaseDirectory;
+                var xmlPath = Path.Combine(basePath, "MeetMusicAPI.xml");
+                c.IncludeXmlComments(xmlPath);
             });
         }
 
