@@ -15,7 +15,7 @@ namespace API.Controllers
         [Route("")]
         public async Task Login(string returnUrl = "/api/health")
         {
-            await HttpContext.ChallengeAsync("Spotify", new AuthenticationProperties { RedirectUri = returnUrl });
+            //await HttpContext.ChallengeAsync("Spotify", new AuthenticationProperties { RedirectUri = returnUrl });
         }
 
         [Authorize]
@@ -24,7 +24,7 @@ namespace API.Controllers
         public async Task Logout()
         {
             // Clear the local session cookie
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            //await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             //// Construct the post-logout URL (i.e. where we'll tell Auth0 to redirect after logging the user out)
             //var request = HttpContext.Request;
