@@ -1,4 +1,5 @@
 using Data.Context;
+using MeetMusic.ExceptionMiddleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -105,6 +106,12 @@ namespace API
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseHttpStatusCodeExceptionMiddleware();
+            }
+            else
+            {
+                app.UseHttpStatusCodeExceptionMiddleware();
+                app.UseExceptionHandler();
             }
 
             //app.UseAuthentication();
