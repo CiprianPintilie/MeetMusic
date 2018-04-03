@@ -1,3 +1,5 @@
+﻿using API.Interop;
+using API.Services;
 using Data.Context;
 using MeetMusic.ExceptionMiddleware;
 using Microsoft.AspNetCore.Builder;
@@ -28,6 +30,11 @@ namespace API
             {
                 options.UseMySQL(Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            //Add services
+            services.AddTransient<IMusicGenreService, MusicGenreService>();
+            services.AddTransient<IMusicFamilyService, MusicFamilyService>();
+            services.AddTransient<IUserService, UserService>();
 
             //Add Oauth flow with spotify
             //Deactivated until prompt resolution
