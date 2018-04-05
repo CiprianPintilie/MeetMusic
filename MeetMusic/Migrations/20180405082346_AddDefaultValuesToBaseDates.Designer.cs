@@ -10,9 +10,10 @@ using System;
 namespace MeetMusic.Migrations
 {
     [DbContext(typeof(MeetMusicDbContext))]
-    partial class MeetMusicDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180405082346_AddDefaultValuesToBaseDates")]
+    partial class AddDefaultValuesToBaseDates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,7 +31,8 @@ namespace MeetMusic.Migrations
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.Property<DateTime?>("UpdatedAt");
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.HasKey("Id");
 
@@ -52,7 +54,8 @@ namespace MeetMusic.Migrations
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.Property<DateTime?>("UpdatedAt");
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.HasKey("Id");
 
@@ -95,7 +98,8 @@ namespace MeetMusic.Migrations
 
                     b.Property<string>("PhoneNumber");
 
-                    b.Property<DateTime?>("UpdatedAt");
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate();
 
                     b.HasKey("Id");
 

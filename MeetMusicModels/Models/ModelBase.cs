@@ -9,15 +9,16 @@ namespace MeetMusicModels.Models
         protected ModelBase()
         {
             Id = new Guid().ToString();
+            UpdatedAt = DateTime.MinValue;
+            DeletedAt = DateTime.MinValue;
         }
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [StringLength(36)]
         public string Id { get; set; }
-
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime UpdatedAt { get; set; }
+        
+        public DateTime? UpdatedAt { get; set; }
 
         public DateTime? DeletedAt { get; set; }
 
