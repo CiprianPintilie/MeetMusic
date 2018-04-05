@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using API.ExceptionMiddleware;
 using API.Interop;
 using Data.Context;
 using MeetMusicModels.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Utils.Hash;
 
 namespace API.Services
 {
@@ -15,14 +20,41 @@ namespace API.Services
             _context = context;
         }
 
-        public Task<User[]> GetUsers()
+        public async Task<User[]> GetUsers()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var users = await _context.Users.ToArrayAsync();
+                for (int i = 0; i < users.Length; i++)
+                {
+                    users[i].Password = null;
+                }
+                return users;
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
-        public Task<User> GetUser(Guid id)
+        public async Task<User> GetUser(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var user = await _context.Users.FindAsync(id);
+                if (user == null)
+                    throw new HttpStatusCodeException(StatusCodes.Status404NotFound,
+                        $"No user with the id '{id}' found");
+                return user;
+            }
+            catch (HttpStatusCodeException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         public Task<UserMusicFamily[]> GetUserTopMusicFamilies(Guid id)
@@ -30,19 +62,112 @@ namespace API.Services
             throw new NotImplementedException();
         }
 
-        public Task<User> CreateUser(User user)
+        public async Task<User> CreateUser(User user)
         {
-            throw new NotImplementedException();
+            try
+            {
+                user.Id = Guid.NewGuid().ToString("D");
+                user.Password = PasswordTool.HashPassword(user.Password);
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+                user.Password = null;
+                return user;
+            }
+            catch (DbUpdateException e)
+            {
+                if (e.InnerException != null && e.InnerException.Message.Contains("uplicate"))
+                    throw new HttpStatusCodeException(StatusCodes.Status409Conflict, e.InnerException.Message);
+                throw new HttpStatusCodeException(StatusCodes.Status400BadRequest, e.Message);
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
-        public Task<User> UpdateUser(User user)
+        public async Task<User> UpdateUser(User user, Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var userModel = await _context.Users.FindAsync(id);
+                if (user == null)
+                    throw new HttpStatusCodeException(StatusCodes.Status404NotFound,
+                        $"No user with the id '{id}' found");
+                _context.Users.Update(CopyUser(user, userModel));
+                await _context.SaveChangesAsync();
+                return userModel;
+            }
+            catch (HttpStatusCodeException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
-        public Task DeleteUser(Guid id)
+        public async Task DeleteUser(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var user = _context.Users.Find(id);
+                if (user == null)
+                    throw new HttpStatusCodeException(StatusCodes.Status404NotFound, $"No user with the id '{id}' found");
+                _context.Remove(user);
+                await _context.SaveChangesAsync();
+            }
+            catch (HttpStatusCodeException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        public async Task<string> AuthenticateUser(string email, string password)
+        {
+            try
+            {
+                var users = await _context.Users.ToArrayAsync();
+                var user = users.Single(u => u.Email == email);
+                if (!PasswordTool.ValidatePassword(password, user.Password))
+                    throw new HttpStatusCodeException(StatusCodes.Status401Unauthorized, "Invalid password");
+                return user.Id;
+            }
+            catch (HttpStatusCodeException)
+            {
+                throw;
+            }
+            catch (ArgumentNullException)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status401Unauthorized, "User not found");
+            }
+            catch (InvalidOperationException)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status401Unauthorized, "User not found");
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        private User CopyUser(User sourceUserModel, User destUserModel)
+        {
+            destUserModel.FirstName = sourceUserModel.FirstName;
+            destUserModel.LastName = sourceUserModel.LastName;
+            destUserModel.Email = sourceUserModel.Email;
+            destUserModel.Gender = sourceUserModel.Gender;
+            destUserModel.AvatarUrl = sourceUserModel.AvatarUrl;
+            destUserModel.PhoneNumber = sourceUserModel.PhoneNumber;
+            destUserModel.BirthDate = sourceUserModel.BirthDate;
+            destUserModel.Description = sourceUserModel.Description;
+            destUserModel.UpdatedAt = DateTime.Now;
+
+            return destUserModel;
         }
     }
 }

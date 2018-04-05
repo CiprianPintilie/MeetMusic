@@ -10,7 +10,8 @@ namespace API.Interop
         Task<User> GetUser(Guid id);
         Task<UserMusicFamily[]> GetUserTopMusicFamilies(Guid id);
         Task<User> CreateUser(User user);
-        Task<User> UpdateUser(User user);
+        Task<User> UpdateUser(User user, Guid id);
         Task DeleteUser(Guid id);
+        Task<string> AuthenticateUser(string email, string password);
     }
 }
