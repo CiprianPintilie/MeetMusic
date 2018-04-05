@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataAccess\Data.csproj" />
+    <ProjectReference Include="..\Utils\Utils.csproj" />
   </ItemGroup>
 
   <ItemGroup>
