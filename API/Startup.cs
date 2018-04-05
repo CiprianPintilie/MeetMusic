@@ -1,14 +1,17 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using API.Interop;
 using API.Services;
 using Data.Context;
 using MeetMusic.ExceptionMiddleware;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace API
@@ -39,73 +42,21 @@ namespace API
             services.AddTransient<IMusicFamilyService, MusicFamilyService>();
             services.AddTransient<IUserService, UserService>();
 
-            //Add Oauth flow with spotify
-            //Deactivated until prompt resolution
-            //services.AddAuthentication(options =>
-            //    {
-            //        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            //        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            //        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            //    })
-            //    .AddCookie(options =>
-            //    {
-            //        options.Cookie.Path = "/api";
-            //        options.LoginPath = "/api/account";
-            //        options.ExpireTimeSpan = TimeSpan.FromDays(20);
-            //    })
-            //    .AddOAuth("Spotify", options =>
-            //    {
-            //        options.ClientId = Configuration["Spotify:ClientId"];
-            //        options.ClientSecret = Configuration["Spotify:ClientSecret"];
-            //        options.CallbackPath = new PathString("/spotify-login");
-
-            //        // Configure the Auth0 endpoints                
-            //        options.AuthorizationEndpoint = "https://accounts.spotify.com/authorize";
-            //        options.TokenEndpoint = "https://accounts.spotify.com/api/token";
-            //        options.UserInformationEndpoint = "https://api.spotify.com/v1/me";
-
-            //        // To save the tokens to the Authentication Properties we need to set this to true
-            //        // See code in OnTicketReceived event below to extract the tokens and save them as Claims
-            //        options.SaveTokens = true;
-
-            //        // Set scopes to see user's private informations and user's top artists
-            //        options.Scope.Clear();
-            //        options.Scope.Add("user-read-private");
-            //        options.Scope.Add("user-read-email");
-            //        options.Scope.Add("user-read-birthdate");
-            //        options.Scope.Add("user-top-read");
-
-            //        options.Events = new OAuthEvents
-            //        {
-            //            OnCreatingTicket = async context =>
-            //            {
-            //                // Retrieve user info
-            //                var request = new HttpRequestMessage(HttpMethod.Get, context.Options.UserInformationEndpoint);
-            //                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", context.AccessToken);
-            //                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            //                var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
-            //                response.EnsureSuccessStatusCode();
-
-            //                // Extract the user info object
-            //                var user = JObject.Parse(await response.Content.ReadAsStringAsync());
-
-            //                // Add the name identifier claim
-            //                var userId = user.Value<string>("id");
-            //                if (!string.IsNullOrEmpty(userId))
-            //                {
-            //                    context.Identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, userId, ClaimValueTypes.String, context.Options.ClaimsIssuer));
-            //                }
-
-            //                // Add the email
-            //                var email = user.Value<string>("email");
-            //                if (!string.IsNullOrEmpty(email))
-            //                {
-            //                    context.Identity.AddClaim(new Claim(ClaimTypes.Email, email, ClaimValueTypes.String, context.Options.ClaimsIssuer));
-            //                }
-            //            }
-            //        };
-            //    });
+            //Enable JWT authentification
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(jwtBearerOptions =>
+                {
+                    jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateActor = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = Configuration["Token:Issuer"],
+                        ValidAudience = Configuration["Token:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Token:SignatureKey"]))
+                    };
+                });
 
             services.AddMvc();
 
@@ -150,7 +101,8 @@ namespace API
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "MeetMusic API V1");
             });
 
-            //app.UseAuthentication();
+            app.UseAuthentication();
+
             app.UseMvc();
         }
     }
