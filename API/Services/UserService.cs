@@ -42,7 +42,7 @@ namespace API.Services
         {
             try
             {
-                var user = await _context.Users.FindAsync(id);
+                var user = await _context.Users.FindAsync(id.ToString("D"));
                 if (user == null || user.Deleted)
                     throw new HttpStatusCodeException(StatusCodes.Status404NotFound,
                         $"No user with the id '{id}' found");
@@ -58,9 +58,17 @@ namespace API.Services
             }
         }
 
-        public Task<UserMusicFamily[]> GetUserTopMusicFamilies(Guid id)
+        public async Task<UserMusicFamily[]> GetUserTopMusicFamilies(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var musicTastes = await _context.UserMusicFamilies.ToArrayAsync();
+                return musicTastes.Where(t => new Guid(t.UserId).CompareTo(id) == 0).ToArray();
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         public async Task<User> CreateUser(User user)
@@ -90,8 +98,8 @@ namespace API.Services
         {
             try
             {
-                var userModel = await _context.Users.FindAsync(id);
-                if (user == null || user.Deleted)
+                var userModel = await _context.Users.FindAsync(id.ToString("D"));
+                if (userModel == null || user.Deleted)
                     throw new HttpStatusCodeException(StatusCodes.Status404NotFound,
                         $"No user with the id '{id}' found");
                 _context.Users.Update(CopyUser(user, userModel));
@@ -108,11 +116,33 @@ namespace API.Services
             }
         }
 
+        public async Task ActivateUser(Guid id)
+        {
+            try
+            {
+                var userModel = await _context.Users.FindAsync(id.ToString("D"));
+                if (userModel == null)
+                    throw new HttpStatusCodeException(StatusCodes.Status404NotFound,
+                        $"No user with the id '{id}' found");
+                userModel.Deleted = false;
+                _context.Users.Update(userModel);
+                await _context.SaveChangesAsync();
+            }
+            catch (HttpStatusCodeException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
         public async Task DeleteUser(Guid id)
         {
             try
             {
-                var user = await _context.Users.FindAsync(id);
+                var user = await _context.Users.FindAsync(id.ToString("D"));
                 if (user == null || user.Deleted)
                     throw new HttpStatusCodeException(StatusCodes.Status404NotFound,
                         $"No user with the id '{id}' found");

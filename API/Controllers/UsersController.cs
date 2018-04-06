@@ -39,6 +39,7 @@ namespace API.Controllers
         /// </summary>
         /// <returns></returns>
         [ProducesResponseType(typeof(User), 200)]
+        [ProducesResponseType(typeof(User), 404)]
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> GetUser(Guid id)
@@ -48,12 +49,27 @@ namespace API.Controllers
         }
 
         /// <summary>
+        /// Get user's top listened music families
+        /// </summary>
+        /// <returns></returns>
+        [ProducesResponseType(typeof(UserMusicFamily[]), 200)]
+        [ProducesResponseType(typeof(UserMusicFamily[]), 404)]
+        [HttpGet]
+        [Route("top/families/{id}")]
+        public async Task<IActionResult> GetUserTopFamilies(Guid id)
+        {
+            var musicTastes = await _userService.GetUserTopMusicFamilies(id);
+            return Ok(musicTastes);
+        }
+
+        /// <summary>
         /// Creates a user
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
         [AllowAnonymous]
         [ProducesResponseType(typeof(User), 201)]
+        [ProducesResponseType(typeof(User), 409)]
         [HttpPost]
         [Route("")]
         public async Task<IActionResult> CreateUser([FromBody] User user)
@@ -61,6 +77,54 @@ namespace API.Controllers
             if (!ModelState.IsValid) return BadRequest("Invalid data in model");
             var createdUser = await _userService.CreateUser(user);
             return Created($"{_apiUrl}/users/{createdUser.Id}", createdUser);
+        }
+        
+        /// <summary>
+        /// Updates a user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [ProducesResponseType(typeof(User), 200)]
+        [ProducesResponseType(typeof(User), 404)]
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> UpdateUser([FromBody] User user, Guid id)
+        {
+            if (!ModelState.IsValid) return BadRequest("Invalid data in model");
+            var createdUser = await _userService.UpdateUser(user, id);
+            return Ok(createdUser);
+        }
+
+        /// <summary>
+        /// Activates a deleted user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [HttpPut]
+        [Route("activate/{id}")]
+        public async Task<IActionResult> ActivateUser(Guid id)
+        {
+            await _userService.ActivateUser(id);
+            return Ok();
+        }
+
+        /// <summary>
+        /// Deletes a user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            await _userService.DeleteUser(id);
+            return NoContent();
         }
     }
 }
