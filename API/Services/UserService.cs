@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.ExceptionMiddleware;
 using API.Interop;
 using Data.Context;
+using MeetMusicModels.InMemoryModels;
 using MeetMusicModels.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -116,6 +118,30 @@ namespace API.Services
             }
         }
 
+        public async Task UpdateUserTastes(Guid userId, UserMusicFamily[] models)
+        {
+            try
+            {
+                var musicTastes = await _context.UserMusicFamilies.ToArrayAsync();
+                var userMusicTastes = musicTastes.Where(t => new Guid(t.UserId).CompareTo(userId) == 0).ToArray();
+                if (userMusicTastes.Any())
+                {
+                    _context.UserMusicFamilies.RemoveRange(userMusicTastes);
+                    await _context.SaveChangesAsync();
+                }
+                foreach (var model in models)
+                {
+                    model.UserId = userId.ToString("D");
+                    await _context.UserMusicFamilies.AddAsync(model);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
         public async Task ActivateUser(Guid id)
         {
             try
@@ -149,6 +175,53 @@ namespace API.Services
                 user.Deleted = true;
                 user.DeletedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
+            }
+            catch (HttpStatusCodeException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        public async Task<MatchModel[]> MatchUser(Guid id, MatchParametersModel model)
+        {
+            try
+            {
+                var matchedUsers = new List<MatchModel>();
+                var userTastes = await GetUserTopMusicFamilies(id);
+                var topUserTastes = userTastes.OrderBy(t => t.Rank).Take(3).ToArray();
+                var users = await GetUsers();
+                foreach (var item in users)
+                {
+                    if (item.Deleted || new Guid(item.Id).CompareTo(id) == 0)
+                        continue;
+                    if (model != null)
+                        if (model.Gender != 0 && model.Gender != item.Gender)
+                            continue;
+
+                    var matchScore = 0.0;
+                    var tastes = await GetUserTopMusicFamilies(new Guid(item.Id));
+                    var topTastes = tastes.OrderBy(t => t.Rank).Take(3).ToArray();
+                    if (!topUserTastes.Select(t => t.FamilyId).Any(x => topTastes.Select(t => t.FamilyId).Any(y => y == x)))
+                        continue;
+                    foreach (var taste in topUserTastes)
+                    {
+                        var matchedTaste = topTastes.SingleOrDefault(t => t.FamilyId.Equals(taste.FamilyId));
+                        if (matchedTaste == null)
+                            continue;
+                        matchScore += ComputeMatchScore(matchedTaste.Rank, taste.Rank);
+                    }
+                    if (matchScore > 0)
+                        matchedUsers.Add(new MatchModel
+                        {
+                            User = item,
+                            MatchScore = matchScore
+                        });
+                }
+                return matchedUsers.OrderByDescending(m => m.MatchScore).ToArray();
             }
             catch (HttpStatusCodeException)
             {
@@ -201,6 +274,26 @@ namespace API.Services
             destUserModel.UpdatedAt = DateTime.Now;
 
             return destUserModel;
+        }
+
+        private double ComputeMatchScore(int matchedTastePosition, int userTastePosition)
+        {
+            int scoreValue;
+            switch (userTastePosition)
+            {
+                case 1:
+                    scoreValue = 60;
+                    break;
+                case 2:
+                    scoreValue = 40;
+                    break;
+                case 3:
+                    scoreValue = 30;
+                    break;
+                default:
+                    throw new HttpStatusCodeException(StatusCodes.Status500InternalServerError, "Something went wrong during tastes ranking");
+            }
+            return Math.Round((double)scoreValue / matchedTastePosition, 1);
         }
     }
 }

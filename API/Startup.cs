@@ -41,6 +41,7 @@ namespace API
             services.AddTransient<IMusicGenreService, MusicGenreService>();
             services.AddTransient<IMusicFamilyService, MusicFamilyService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<ITastesManagementService, TastesManagementService>();
 
             //Enable JWT authentification
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

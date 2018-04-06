@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using API.Interop;
+using MeetMusicModels.InMemoryModels;
 using MeetMusicModels.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +40,7 @@ namespace API.Controllers
         /// </summary>
         /// <returns></returns>
         [ProducesResponseType(typeof(User), 200)]
-        [ProducesResponseType(typeof(User), 404)]
+        [ProducesResponseType(404)]
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> GetUser(Guid id)
@@ -53,7 +54,7 @@ namespace API.Controllers
         /// </summary>
         /// <returns></returns>
         [ProducesResponseType(typeof(UserMusicFamily[]), 200)]
-        [ProducesResponseType(typeof(UserMusicFamily[]), 404)]
+        [ProducesResponseType(404)]
         [HttpGet]
         [Route("top/families/{id}")]
         public async Task<IActionResult> GetUserTopFamilies(Guid id)
@@ -69,7 +70,7 @@ namespace API.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [ProducesResponseType(typeof(User), 201)]
-        [ProducesResponseType(typeof(User), 409)]
+        [ProducesResponseType(409)]
         [HttpPost]
         [Route("")]
         public async Task<IActionResult> CreateUser([FromBody] User user)
@@ -86,7 +87,7 @@ namespace API.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [ProducesResponseType(typeof(User), 200)]
-        [ProducesResponseType(typeof(User), 404)]
+        [ProducesResponseType(404)]
         [HttpPut]
         [Route("{id}")]
         public async Task<IActionResult> UpdateUser([FromBody] User user, Guid id)
@@ -94,6 +95,19 @@ namespace API.Controllers
             if (!ModelState.IsValid) return BadRequest("Invalid data in model");
             var createdUser = await _userService.UpdateUser(user, id);
             return Ok(createdUser);
+        }
+
+        /// <summary>
+        /// Updates given user tastes using the given model
+        /// </summary>
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [HttpPut]
+        [Route("tastes/{id}")]
+        public async Task<IActionResult> UpdateUserTastes(Guid id, [FromBody] UserMusicFamily[] models)
+        {
+            await _userService.UpdateUserTastes(id, models);
+            return Ok();
         }
 
         /// <summary>
@@ -110,6 +124,21 @@ namespace API.Controllers
         {
             await _userService.ActivateUser(id);
             return Ok();
+        }
+
+        /// <summary>
+        /// Return matched users
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [ProducesResponseType(typeof(MatchModel[]), 200)]
+        [ProducesResponseType(404)]
+        [HttpPut]
+        [Route("{id}/match")]
+        public async Task<IActionResult> MatchUser(Guid id, [FromBody] MatchParametersModel model)
+        {
+            return Ok(await _userService.MatchUser(id, model));
         }
 
         /// <summary>
