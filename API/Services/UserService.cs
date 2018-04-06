@@ -25,6 +25,7 @@ namespace API.Services
             try
             {
                 var users = await _context.Users.ToArrayAsync();
+                users = users.Where(u => !u.Deleted).ToArray();
                 for (int i = 0; i < users.Length; i++)
                 {
                     users[i].Password = null;
@@ -42,7 +43,7 @@ namespace API.Services
             try
             {
                 var user = await _context.Users.FindAsync(id);
-                if (user == null)
+                if (user == null || user.Deleted)
                     throw new HttpStatusCodeException(StatusCodes.Status404NotFound,
                         $"No user with the id '{id}' found");
                 return user;
@@ -90,7 +91,7 @@ namespace API.Services
             try
             {
                 var userModel = await _context.Users.FindAsync(id);
-                if (user == null)
+                if (user == null || user.Deleted)
                     throw new HttpStatusCodeException(StatusCodes.Status404NotFound,
                         $"No user with the id '{id}' found");
                 _context.Users.Update(CopyUser(user, userModel));
@@ -111,10 +112,12 @@ namespace API.Services
         {
             try
             {
-                var user = _context.Users.Find(id);
-                if (user == null)
-                    throw new HttpStatusCodeException(StatusCodes.Status404NotFound, $"No user with the id '{id}' found");
-                _context.Remove(user);
+                var user = await _context.Users.FindAsync(id);
+                if (user == null || user.Deleted)
+                    throw new HttpStatusCodeException(StatusCodes.Status404NotFound,
+                        $"No user with the id '{id}' found");
+                user.Deleted = true;
+                user.DeletedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
             catch (HttpStatusCodeException)
