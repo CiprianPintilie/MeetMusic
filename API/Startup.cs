@@ -74,7 +74,7 @@ namespace API
 
                 // Set the comments path for the Swagger JSON and UI.
                 var basePath = AppContext.BaseDirectory;
-                var xmlPath = Path.Combine(basePath, "MeetMusicAPI.xml");
+                var xmlPath = Path.Combine(basePath, "MeetMusicApi.xml");
                 c.IncludeXmlComments(xmlPath);
             });
         }
