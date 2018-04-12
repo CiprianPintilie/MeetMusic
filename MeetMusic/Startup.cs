@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,8 @@ namespace MeetMusic
             {
                 options.UseMySQL(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("MeetMusic"));
             });
+
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,10 +41,20 @@ namespace MeetMusic
                 app.UseDeveloperExceptionPage();
             }
 
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("HelloO World!");
-            });
+            app.UseMvc(ConfigureRoute);
         }
+
+        private void ConfigureRoute(IRouteBuilder routeBuilder)
+        {
+            routeBuilder.MapRoute(
+                name: "index",
+                template: "index",
+                defaults: new { controller = "Home", action = "Index" });
+
+            routeBuilder.MapRoute(
+                name: "Default",
+                template: "{controller}/{action}/{id?}");
+        }
+
     }
 }
