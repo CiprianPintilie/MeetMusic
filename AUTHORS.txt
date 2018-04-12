@@ -8,5 +8,5 @@ Ciprian PINTILIE:
     - Création des bases de données en "code first" avec Entity Framework
     - Réalisation de la partie MVC
 
-Anas HAZ:
+Anas HAZGOUR:
     - Création et livraison du client (application mobile) permettant de consommer l'API
