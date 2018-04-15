@@ -1,10 +1,12 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
+
 
 namespace MeetMusicModels.Models
 {
-    public abstract class ModelBase
+    public abstract class ModelBase : IdentityUser
     {
         protected ModelBase()
         {
