@@ -1,0 +1,12 @@
+Ciprian PINTILIE
+Anas HAZ
+
+Responsabilités :
+
+Ciprian PINTILIE:
+    - Création, documentation, sécurisation (token auth), et livraison de l'API
+    - Création des bases de données en "code first" avec Entity Framework
+    - Réalisation de la partie MVC
+
+Anas HAZGOUR:
+    - Création et livraison du client (application mobile) permettant de consommer l'API
