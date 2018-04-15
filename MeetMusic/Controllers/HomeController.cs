@@ -12,5 +12,10 @@ namespace MeetMusic.Controllers
         {
             return View();
         }
+
+        public async Task<IActionResult> UsersList()
+        {
+            return View();
+        }
     }
 }

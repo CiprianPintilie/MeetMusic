@@ -36,31 +36,33 @@ namespace MeetMusic
                 options.UseMySQL(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("MeetMusic"));
             });
 
-            services.AddIdentity<User, IdentityRole>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-            }).AddEntityFrameworkStores<MeetMusicDbContext>();
+            //services.AddIdentity<User, IdentityRole>(options =>
+            //{
+            //    options.Password.RequireDigit = false;
+            //    options.Password.RequiredLength = 6;
+            //    options.Password.RequireLowercase = false;
+            //    options.Password.RequireUppercase = false;
+            //    options.Password.RequireNonAlphanumeric = false;
+            //}).AddEntityFrameworkStores<MeetMusicDbContext>();
             
-            services.ConfigureApplicationCookie(options => {
-                // Override the default events
-                options.Events = new CookieAuthenticationEvents
-                {
-                    OnRedirectToAccessDenied = ReplaceRedirectorWithStatusCode(HttpStatusCode.Forbidden),
-                    OnRedirectToLogin = ReplaceRedirectorWithStatusCode(HttpStatusCode.Unauthorized)
-                };
+            //services.ConfigureApplicationCookie(options => {
+            //    // Override the default events
+            //    options.Events = new CookieAuthenticationEvents
+            //    {
+            //        OnRedirectToAccessDenied = ReplaceRedirectorWithStatusCode(HttpStatusCode.Forbidden),
+            //        OnRedirectToLogin = ReplaceRedirectorWithStatusCode(HttpStatusCode.Unauthorized)
+            //    };
 
-                // Configure our application cookie
-                options.Cookie.Name = ".meetmusic";
-                options.Cookie.HttpOnly = true; // This must be true to prevent XSS
-                options.Cookie.SameSite = SameSiteMode.None;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Should ideally be "Always"
+            //    // Configure our application cookie
+            //    options.Cookie.Name = ".meetmusic";
+            //    options.Cookie.HttpOnly = true; // This must be true to prevent XSS
+            //    options.Cookie.SameSite = SameSiteMode.None;
+            //    options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Should ideally be "Always"
 
-                options.SlidingExpiration = true;
-            });
+            //    options.SlidingExpiration = true;
+            //});
+
+            services.AddMvc();
 
         }
 
@@ -72,16 +74,21 @@ namespace MeetMusic
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseAuthentication();
+            //app.UseAuthentication();
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
 
-        static Func<RedirectContext<CookieAuthenticationOptions>, Task> ReplaceRedirectorWithStatusCode(HttpStatusCode statusCode) => context =>
-        {
-            // Adapted from https://stackoverflow.com/questions/42030137/suppress-redirect-on-api-urls-in-asp-net-core
-            context.Response.StatusCode = (int)statusCode;
-            return Task.CompletedTask;
-        };
+        //static Func<RedirectContext<CookieAuthenticationOptions>, Task> ReplaceRedirectorWithStatusCode(HttpStatusCode statusCode) => context =>
+        //{
+        //    // Adapted from https://stackoverflow.com/questions/42030137/suppress-redirect-on-api-urls-in-asp-net-core
+        //    context.Response.StatusCode = (int)statusCode;
+        //    return Task.CompletedTask;
+        //};
     }
 }
